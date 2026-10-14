@@ -1,0 +1,407 @@
+{
+ "today": {
+  "nodes": [
+   {
+    "id": "cust",
+    "label": "Customer",
+    "sub": "",
+    "kind": "person",
+    "x": 620,
+    "y": 40,
+    "note": ""
+   },
+   {
+    "id": "page",
+    "label": "Shop website",
+    "sub": "one 600KB file",
+    "kind": "page",
+    "x": 620,
+    "y": 150,
+    "note": ""
+   },
+   {
+    "id": "t_home",
+    "label": "Home",
+    "sub": "",
+    "kind": "tab",
+    "x": 160,
+    "y": 300,
+    "note": ""
+   },
+   {
+    "id": "t_prod",
+    "label": "Products",
+    "sub": "+ search",
+    "kind": "tab",
+    "x": 390,
+    "y": 300,
+    "note": ""
+   },
+   {
+    "id": "t_cart",
+    "label": "Cart",
+    "sub": "",
+    "kind": "tab",
+    "x": 620,
+    "y": 300,
+    "note": ""
+   },
+   {
+    "id": "t_ord",
+    "label": "Orders",
+    "sub": "+ returns",
+    "kind": "tab",
+    "x": 850,
+    "y": 300,
+    "note": ""
+   },
+   {
+    "id": "t_admin",
+    "label": "Admin",
+    "sub": "5 sub-pages",
+    "kind": "tab",
+    "x": 1080,
+    "y": 300,
+    "note": ""
+   },
+   {
+    "id": "d_prod",
+    "label": "Products sheet",
+    "sub": "",
+    "kind": "data",
+    "x": 300,
+    "y": 480,
+    "note": ""
+   },
+   {
+    "id": "d_stock",
+    "label": "Stock counts",
+    "sub": "copied nightly",
+    "kind": "data",
+    "x": 500,
+    "y": 480,
+    "note": "Same product kept in two places"
+   },
+   {
+    "id": "d_ord",
+    "label": "Orders",
+    "sub": "spreadsheet",
+    "kind": "data",
+    "x": 720,
+    "y": 480,
+    "note": ""
+   },
+   {
+    "id": "d_ret",
+    "label": "Returns",
+    "sub": "separate list",
+    "kind": "data",
+    "x": 920,
+    "y": 480,
+    "note": ""
+   },
+   {
+    "id": "d_cust",
+    "label": "Customer list",
+    "sub": "exported by hand",
+    "kind": "data",
+    "x": 1100,
+    "y": 480,
+    "note": ""
+   },
+   {
+    "id": "pay",
+    "label": "Payments",
+    "sub": "",
+    "kind": "out",
+    "x": 160,
+    "y": 620,
+    "note": ""
+   },
+   {
+    "id": "mail",
+    "label": "Email service",
+    "sub": "",
+    "kind": "out",
+    "x": 160,
+    "y": 740,
+    "note": ""
+   }
+  ],
+  "edges": [
+   {
+    "from": "cust",
+    "to": "page",
+    "label": "",
+    "dash": false
+   },
+   {
+    "from": "page",
+    "to": "t_home",
+    "label": "",
+    "dash": false
+   },
+   {
+    "from": "page",
+    "to": "t_prod",
+    "label": "",
+    "dash": false
+   },
+   {
+    "from": "page",
+    "to": "t_cart",
+    "label": "",
+    "dash": false
+   },
+   {
+    "from": "page",
+    "to": "t_ord",
+    "label": "",
+    "dash": false
+   },
+   {
+    "from": "page",
+    "to": "t_admin",
+    "label": "",
+    "dash": false
+   },
+   {
+    "from": "t_prod",
+    "to": "d_prod",
+    "label": "",
+    "dash": false
+   },
+   {
+    "from": "t_prod",
+    "to": "d_stock",
+    "label": "",
+    "dash": false
+   },
+   {
+    "from": "d_prod",
+    "to": "d_stock",
+    "label": "copied",
+    "dash": true
+   },
+   {
+    "from": "t_cart",
+    "to": "pay",
+    "label": "",
+    "dash": true
+   },
+   {
+    "from": "t_ord",
+    "to": "d_ord",
+    "label": "",
+    "dash": false
+   },
+   {
+    "from": "t_ord",
+    "to": "d_ret",
+    "label": "",
+    "dash": false
+   },
+   {
+    "from": "d_ret",
+    "to": "d_ord",
+    "label": "synced",
+    "dash": true
+   },
+   {
+    "from": "t_admin",
+    "to": "d_cust",
+    "label": "",
+    "dash": false
+   },
+   {
+    "from": "t_admin",
+    "to": "mail",
+    "label": "",
+    "dash": true
+   }
+  ]
+ },
+ "planned": {
+  "nodes": [
+   {
+    "id": "cust",
+    "label": "Customer",
+    "sub": "",
+    "kind": "person",
+    "x": 620,
+    "y": 40,
+    "note": ""
+   },
+   {
+    "id": "page",
+    "label": "Shop 2",
+    "sub": "split into small files",
+    "kind": "page",
+    "x": 620,
+    "y": 150,
+    "note": ""
+   },
+   {
+    "id": "t_home",
+    "label": "Home",
+    "sub": "",
+    "kind": "tab",
+    "x": 260,
+    "y": 300,
+    "note": ""
+   },
+   {
+    "id": "t_cat",
+    "label": "Catalogue",
+    "sub": "filter by category",
+    "kind": "tab",
+    "x": 500,
+    "y": 300,
+    "note": ""
+   },
+   {
+    "id": "t_check",
+    "label": "Checkout",
+    "sub": "",
+    "kind": "tab",
+    "x": 740,
+    "y": 300,
+    "note": ""
+   },
+   {
+    "id": "t_admin",
+    "label": "Admin",
+    "sub": "one screen",
+    "kind": "tab",
+    "x": 980,
+    "y": 300,
+    "note": ""
+   },
+   {
+    "id": "b_prod",
+    "label": "Product",
+    "sub": "stock is a field",
+    "kind": "block",
+    "x": 360,
+    "y": 480,
+    "note": "Stock lives on the product, no copy"
+   },
+   {
+    "id": "b_order",
+    "label": "Order",
+    "sub": "status: paid, sent, returned",
+    "kind": "block",
+    "x": 620,
+    "y": 480,
+    "note": "Returns become a status"
+   },
+   {
+    "id": "b_person",
+    "label": "Customer",
+    "sub": "one record each",
+    "kind": "block",
+    "x": 880,
+    "y": 480,
+    "note": ""
+   },
+   {
+    "id": "pay",
+    "label": "Payments",
+    "sub": "",
+    "kind": "out",
+    "x": 160,
+    "y": 620,
+    "note": ""
+   },
+   {
+    "id": "mail",
+    "label": "Email service",
+    "sub": "",
+    "kind": "out",
+    "x": 880,
+    "y": 640,
+    "note": ""
+   }
+  ],
+  "edges": [
+   {
+    "from": "cust",
+    "to": "page",
+    "label": "",
+    "dash": false
+   },
+   {
+    "from": "page",
+    "to": "t_home",
+    "label": "",
+    "dash": false
+   },
+   {
+    "from": "page",
+    "to": "t_cat",
+    "label": "",
+    "dash": false
+   },
+   {
+    "from": "page",
+    "to": "t_check",
+    "label": "",
+    "dash": false
+   },
+   {
+    "from": "page",
+    "to": "t_admin",
+    "label": "",
+    "dash": false
+   },
+   {
+    "from": "t_cat",
+    "to": "b_prod",
+    "label": "",
+    "dash": false
+   },
+   {
+    "from": "t_check",
+    "to": "b_order",
+    "label": "",
+    "dash": false
+   },
+   {
+    "from": "t_check",
+    "to": "pay",
+    "label": "",
+    "dash": true
+   },
+   {
+    "from": "b_order",
+    "to": "b_prod",
+    "label": "contains",
+    "dash": false
+   },
+   {
+    "from": "b_order",
+    "to": "b_person",
+    "label": "placed by",
+    "dash": false
+   },
+   {
+    "from": "t_admin",
+    "to": "b_order",
+    "label": "",
+    "dash": false
+   },
+   {
+    "from": "t_admin",
+    "to": "b_person",
+    "label": "",
+    "dash": false
+   },
+   {
+    "from": "b_person",
+    "to": "mail",
+    "label": "",
+    "dash": true
+   }
+  ]
+ }
+}
