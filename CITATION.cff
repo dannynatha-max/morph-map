@@ -1,12 +1,12 @@
 cff-version: 1.2.0
 message: "If you use or build on this work, please cite it as below."
-title: "Morph Map"
-abstract: "An animated, editable map of how a system works today and how it should work, with a Play button that morphs one into the other."
+title: "Morph Map: reverse mode for repos, apps and websites"
+abstract: "Morph Map plus scanners that read a code repository or a public website and draw it as an animated, editable map, so people can learn how real projects are built and see how they changed."
 type: software
 authors:
   - family-names: "Natha"
     given-names: "Danny"
-version: "1.0.0"
+version: "2.0.0"
 date-released: "2026-10-14"
 license: MIT
 repository-code: "https://github.com/dannynatha-max/morph-map"

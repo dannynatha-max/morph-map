@@ -1,0 +1,662 @@
+{
+ "today": {
+  "nodes": [
+   {
+    "id": "index.js",
+    "label": "index",
+    "sub": "4 lines",
+    "kind": "page",
+    "note": "",
+    "x": 530,
+    "y": 60
+   },
+   {
+    "id": "lib/application.js",
+    "label": "application",
+    "sub": "533 lines",
+    "kind": "mod",
+    "note": "",
+    "x": 440,
+    "y": 400
+   },
+   {
+    "id": "lib/express.js",
+    "label": "express",
+    "sub": "93 lines",
+    "kind": "mod",
+    "note": "",
+    "x": 620,
+    "y": 230
+   },
+   {
+    "id": "lib/middleware/init.js",
+    "label": "init",
+    "sub": "27 lines",
+    "kind": "mod",
+    "note": "",
+    "x": 350,
+    "y": 570
+   },
+   {
+    "id": "lib/middleware/query.js",
+    "label": "query",
+    "sub": "40 lines",
+    "kind": "mod",
+    "note": "",
+    "x": 530,
+    "y": 590
+   },
+   {
+    "id": "lib/request.js",
+    "label": "request",
+    "sub": "402 lines",
+    "kind": "mod",
+    "note": "",
+    "x": 620,
+    "y": 420
+   },
+   {
+    "id": "lib/response.js",
+    "label": "response",
+    "sub": "779 lines",
+    "kind": "mod",
+    "note": "",
+    "x": 800,
+    "y": 400
+   },
+   {
+    "id": "lib/router/index.js",
+    "label": "router",
+    "sub": "384 lines",
+    "kind": "mod",
+    "note": "",
+    "x": 710,
+    "y": 570
+   },
+   {
+    "id": "lib/router/layer.js",
+    "label": "layer",
+    "sub": "68 lines",
+    "kind": "mod",
+    "note": "",
+    "x": 530,
+    "y": 740
+   },
+   {
+    "id": "lib/router/route.js",
+    "label": "route",
+    "sub": "192 lines",
+    "kind": "tab",
+    "note": "",
+    "x": 710,
+    "y": 760
+   },
+   {
+    "id": "lib/utils.js",
+    "label": "utils",
+    "sub": "112 lines",
+    "kind": "mod",
+    "note": "",
+    "x": 620,
+    "y": 910
+   },
+   {
+    "id": "lib/view.js",
+    "label": "view",
+    "sub": "78 lines",
+    "kind": "tab",
+    "note": "",
+    "x": 890,
+    "y": 590
+   },
+   {
+    "id": "support",
+    "label": "support",
+    "sub": "66 lines",
+    "kind": "mod",
+    "note": "",
+    "x": 710,
+    "y": 80
+   },
+   {
+    "id": "ext:debug",
+    "label": "debug",
+    "sub": "outside package, used 4x",
+    "kind": "out",
+    "note": "",
+    "x": 80,
+    "y": 1080
+   },
+   {
+    "id": "ext:utils-merge",
+    "label": "utils-merge",
+    "sub": "outside package, used 3x",
+    "kind": "out",
+    "note": "",
+    "x": 620,
+    "y": 1170
+   },
+   {
+    "id": "ext:methods",
+    "label": "methods",
+    "sub": "outside package, used 3x",
+    "kind": "out",
+    "note": "",
+    "x": 800,
+    "y": 1080
+   },
+   {
+    "id": "ext:parseurl",
+    "label": "parseurl",
+    "sub": "outside package, used 3x",
+    "kind": "out",
+    "note": "",
+    "x": 980,
+    "y": 1100
+   },
+   {
+    "id": "ext:escape-html",
+    "label": "escape-html",
+    "sub": "outside package, used 2x",
+    "kind": "out",
+    "note": "",
+    "x": 440,
+    "y": 1080
+   },
+   {
+    "id": "ext:send",
+    "label": "send",
+    "sub": "outside package, used 2x",
+    "kind": "out",
+    "note": "",
+    "x": 1160,
+    "y": 1080
+   },
+   {
+    "id": "ext:jade",
+    "label": "jade",
+    "sub": "outside package, used 1x",
+    "kind": "out",
+    "note": "",
+    "x": 620,
+    "y": 1100
+   },
+   {
+    "id": "ext:ejs",
+    "label": "ejs",
+    "sub": "outside package, used 1x",
+    "kind": "out",
+    "note": "",
+    "x": 260,
+    "y": 1100
+   }
+  ],
+  "edges": [
+   {
+    "from": "index.js",
+    "to": "lib/express.js",
+    "label": "",
+    "dash": false
+   },
+   {
+    "from": "lib/application.js",
+    "to": "lib/router/index.js",
+    "label": "",
+    "dash": false
+   },
+   {
+    "from": "lib/application.js",
+    "to": "lib/middleware/init.js",
+    "label": "",
+    "dash": false
+   },
+   {
+    "from": "lib/application.js",
+    "to": "lib/middleware/query.js",
+    "label": "",
+    "dash": false
+   },
+   {
+    "from": "lib/application.js",
+    "to": "lib/view.js",
+    "label": "",
+    "dash": false
+   },
+   {
+    "from": "lib/express.js",
+    "to": "lib/application.js",
+    "label": "",
+    "dash": false
+   },
+   {
+    "from": "lib/express.js",
+    "to": "lib/router/route.js",
+    "label": "",
+    "dash": false
+   },
+   {
+    "from": "lib/express.js",
+    "to": "lib/router/index.js",
+    "label": "",
+    "dash": false
+   },
+   {
+    "from": "lib/express.js",
+    "to": "lib/request.js",
+    "label": "",
+    "dash": false
+   },
+   {
+    "from": "lib/express.js",
+    "to": "lib/response.js",
+    "label": "",
+    "dash": false
+   },
+   {
+    "from": "lib/express.js",
+    "to": "lib/middleware/query.js",
+    "label": "",
+    "dash": false
+   },
+   {
+    "from": "lib/response.js",
+    "to": "lib/utils.js",
+    "label": "3 imports",
+    "dash": false
+   },
+   {
+    "from": "lib/router/index.js",
+    "to": "lib/router/route.js",
+    "label": "",
+    "dash": false
+   },
+   {
+    "from": "lib/router/index.js",
+    "to": "lib/router/layer.js",
+    "label": "",
+    "dash": false
+   },
+   {
+    "from": "lib/router/route.js",
+    "to": "lib/utils.js",
+    "label": "",
+    "dash": false
+   },
+   {
+    "from": "lib/view.js",
+    "to": "lib/utils.js",
+    "label": "",
+    "dash": false
+   },
+   {
+    "from": "lib/application.js",
+    "to": "ext:debug",
+    "label": "",
+    "dash": true
+   },
+   {
+    "from": "lib/router/index.js",
+    "to": "ext:debug",
+    "label": "",
+    "dash": true
+   },
+   {
+    "from": "lib/router/layer.js",
+    "to": "ext:debug",
+    "label": "",
+    "dash": true
+   },
+   {
+    "from": "lib/router/route.js",
+    "to": "ext:debug",
+    "label": "",
+    "dash": true
+   },
+   {
+    "from": "lib/application.js",
+    "to": "ext:utils-merge",
+    "label": "",
+    "dash": true
+   },
+   {
+    "from": "lib/express.js",
+    "to": "ext:utils-merge",
+    "label": "",
+    "dash": true
+   },
+   {
+    "from": "lib/response.js",
+    "to": "ext:utils-merge",
+    "label": "",
+    "dash": true
+   },
+   {
+    "from": "lib/application.js",
+    "to": "ext:methods",
+    "label": "",
+    "dash": true
+   },
+   {
+    "from": "lib/router/index.js",
+    "to": "ext:methods",
+    "label": "",
+    "dash": true
+   },
+   {
+    "from": "lib/router/route.js",
+    "to": "ext:methods",
+    "label": "",
+    "dash": true
+   },
+   {
+    "from": "lib/middleware/query.js",
+    "to": "ext:parseurl",
+    "label": "",
+    "dash": true
+   },
+   {
+    "from": "lib/request.js",
+    "to": "ext:parseurl",
+    "label": "",
+    "dash": true
+   },
+   {
+    "from": "lib/router/index.js",
+    "to": "ext:parseurl",
+    "label": "",
+    "dash": true
+   },
+   {
+    "from": "lib/application.js",
+    "to": "ext:escape-html",
+    "label": "",
+    "dash": true
+   },
+   {
+    "from": "lib/response.js",
+    "to": "ext:escape-html",
+    "label": "",
+    "dash": true
+   },
+   {
+    "from": "lib/response.js",
+    "to": "ext:send",
+    "label": "",
+    "dash": true
+   },
+   {
+    "from": "lib/utils.js",
+    "to": "ext:send",
+    "label": "",
+    "dash": true
+   },
+   {
+    "from": "lib/application.js",
+    "to": "ext:jade",
+    "label": "",
+    "dash": true
+   },
+   {
+    "from": "lib/application.js",
+    "to": "ext:ejs",
+    "label": "",
+    "dash": true
+   }
+  ]
+ },
+ "planned": {
+  "nodes": [
+   {
+    "id": "index.js",
+    "label": "index",
+    "sub": "12 lines",
+    "kind": "page",
+    "note": "",
+    "x": 620,
+    "y": 60
+   },
+   {
+    "id": "lib/application.js",
+    "label": "application",
+    "sub": "632 lines",
+    "kind": "mod",
+    "note": "",
+    "x": 440,
+    "y": 400
+   },
+   {
+    "id": "lib/express.js",
+    "label": "express",
+    "sub": "82 lines",
+    "kind": "mod",
+    "note": "",
+    "x": 620,
+    "y": 230
+   },
+   {
+    "id": "lib/request.js",
+    "label": "request",
+    "sub": "528 lines",
+    "kind": "mod",
+    "note": "",
+    "x": 620,
+    "y": 420
+   },
+   {
+    "id": "lib/response.js",
+    "label": "response",
+    "sub": "1051 lines",
+    "kind": "mod",
+    "note": "",
+    "x": 800,
+    "y": 400
+   },
+   {
+    "id": "lib/utils.js",
+    "label": "utils",
+    "sub": "272 lines",
+    "kind": "mod",
+    "note": "",
+    "x": 530,
+    "y": 570
+   },
+   {
+    "id": "lib/view.js",
+    "label": "view",
+    "sub": "206 lines",
+    "kind": "tab",
+    "note": "",
+    "x": 710,
+    "y": 590
+   },
+   {
+    "id": "ext:debug",
+    "label": "debug",
+    "sub": "outside package, used 2x",
+    "kind": "out",
+    "note": "",
+    "x": 80,
+    "y": 740
+   },
+   {
+    "id": "ext:router",
+    "label": "router",
+    "sub": "outside package, used 2x",
+    "kind": "out",
+    "note": "",
+    "x": 620,
+    "y": 830
+   },
+   {
+    "id": "ext:ejs",
+    "label": "ejs",
+    "sub": "outside package, used 2x",
+    "kind": "out",
+    "note": "",
+    "x": 260,
+    "y": 760
+   },
+   {
+    "id": "ext:proxy-addr",
+    "label": "proxy-addr",
+    "sub": "outside package, used 2x",
+    "kind": "out",
+    "note": "",
+    "x": 1160,
+    "y": 740
+   },
+   {
+    "id": "ext:mime-types",
+    "label": "mime-types",
+    "sub": "outside package, used 2x",
+    "kind": "out",
+    "note": "",
+    "x": 800,
+    "y": 740
+   },
+   {
+    "id": "ext:finalhandler",
+    "label": "finalhandler",
+    "sub": "outside package, used 1x",
+    "kind": "out",
+    "note": "",
+    "x": 620,
+    "y": 760
+   },
+   {
+    "id": "ext:once",
+    "label": "once",
+    "sub": "outside package, used 1x",
+    "kind": "out",
+    "note": "",
+    "x": 980,
+    "y": 760
+   },
+   {
+    "id": "ext:express",
+    "label": "express",
+    "sub": "outside package, used 1x",
+    "kind": "out",
+    "note": "",
+    "x": 440,
+    "y": 740
+   }
+  ],
+  "edges": [
+   {
+    "from": "index.js",
+    "to": "lib/express.js",
+    "label": "",
+    "dash": false
+   },
+   {
+    "from": "lib/application.js",
+    "to": "lib/view.js",
+    "label": "",
+    "dash": false
+   },
+   {
+    "from": "lib/application.js",
+    "to": "lib/utils.js",
+    "label": "4 imports",
+    "dash": false
+   },
+   {
+    "from": "lib/express.js",
+    "to": "lib/application.js",
+    "label": "",
+    "dash": false
+   },
+   {
+    "from": "lib/express.js",
+    "to": "lib/request.js",
+    "label": "",
+    "dash": false
+   },
+   {
+    "from": "lib/express.js",
+    "to": "lib/response.js",
+    "label": "",
+    "dash": false
+   },
+   {
+    "from": "lib/response.js",
+    "to": "lib/utils.js",
+    "label": "3 imports",
+    "dash": false
+   },
+   {
+    "from": "lib/application.js",
+    "to": "ext:debug",
+    "label": "",
+    "dash": true
+   },
+   {
+    "from": "lib/view.js",
+    "to": "ext:debug",
+    "label": "",
+    "dash": true
+   },
+   {
+    "from": "lib/application.js",
+    "to": "ext:router",
+    "label": "",
+    "dash": true
+   },
+   {
+    "from": "lib/express.js",
+    "to": "ext:router",
+    "label": "",
+    "dash": true
+   },
+   {
+    "from": "lib/application.js",
+    "to": "ext:ejs",
+    "label": "",
+    "dash": true
+   },
+   {
+    "from": "lib/request.js",
+    "to": "ext:proxy-addr",
+    "label": "",
+    "dash": true
+   },
+   {
+    "from": "lib/utils.js",
+    "to": "ext:proxy-addr",
+    "label": "",
+    "dash": true
+   },
+   {
+    "from": "lib/response.js",
+    "to": "ext:mime-types",
+    "label": "",
+    "dash": true
+   },
+   {
+    "from": "lib/utils.js",
+    "to": "ext:mime-types",
+    "label": "",
+    "dash": true
+   },
+   {
+    "from": "lib/application.js",
+    "to": "ext:finalhandler",
+    "label": "",
+    "dash": true
+   },
+   {
+    "from": "lib/application.js",
+    "to": "ext:once",
+    "label": "",
+    "dash": true
+   },
+   {
+    "from": "lib/application.js",
+    "to": "ext:express",
+    "label": "",
+    "dash": true
+   }
+  ]
+ }
+}

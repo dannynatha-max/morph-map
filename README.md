@@ -1,16 +1,28 @@
-# Morph Map
+# Morph Map 2: reverse mode
 
-Draw how a system works **today**, draw how it **should** work, then press **Play the change** and watch one turn into the other.
+Everything in Morph Map 1, plus **scanners that read an existing project and draw it for you**: a code repository, an app, or a public website. Made for learning how real projects are put together and how they change over time.
 
 ![Morph Map demo](demo.gif)
 
-**[Open the live demo](https://dannynatha-max.github.io/morph-map/)**
+**[Try the scanned examples](https://dannynatha-max.github.io/morph-map/demo-scans.html)**: seven real projects, from a 15-file tool to a 386-file React app, plus Express from 2014 to today and two websites.
 
-## What it's for
-- Planning a refactor: the messy version next to the clean one
-- Explaining an app to a client or a teammate
-- Mapping a business process before and after you improve it
-- Onboarding: how our tools connect
+## 1. Map a code repository or app
+```
+node scanner/morph-scan.js ./any-project --out my-map.json
+```
+Then press **Import** and pick `my-map.json`. Reads JavaScript, TypeScript, Python, Vue, Svelte and HTML. Files or folders become boxes, imports become arrows, outside packages sit along the bottom. No install needed beyond Node 18+.
+
+## 2. Map a public website
+Open the site, open the browser console, paste `scanner/morph-web.js` and press Enter. It reads up to 40 public pages, slowly, and copies a map you can Import. It finds sections, forms, outside services (analytics, widgets, CRMs, video) and how sections link.
+
+## 3. Watch a project change
+Scan an old version and a new one (an old git tag, or an old copy from the Wayback Machine). Put the old map in `today` and the new one in `planned`, then press **Play**. `examples/express-2014-to-now.json` does this for Express.
+
+## Use it responsibly
+- **For learning.** Only scan code you are allowed to read and websites' public pages.
+- **Be gentle.** The website scanner waits between pages and stops at 40. Respect a site's terms and robots.txt.
+- **It only sees the outside of a website.** Server code, databases and anything behind a login stay private.
+- A map is a reading aid, not a copy of anyone's product.
 
 ## How to use
 - **Drag** boxes to move them, drag the paper to pan, scroll or pinch to zoom
@@ -21,11 +33,14 @@ Draw how a system works **today**, draw how it **should** work, then press **Pla
 - **Export / Import** saves your map as a JSON file to keep or share
 - Everything saves in your own browser. Nothing is sent anywhere.
 
-## Run it
-One HTML file, no build step, no dependencies. Open `index.html`, or turn on GitHub Pages.
-
-## Map format
-`example-map.json` shows the shape: `{ today: {nodes, edges}, planned: {nodes, edges} }`. Boxes that share an `id` in both maps glide between positions; the rest fade in or out.
+## What's in the box
+| File | What it does |
+|---|---|
+| `index.html` | The map editor and player |
+| `demo-scans.html` | Seven scanned examples to explore |
+| `scanner/morph-scan.js` | Reads a code folder into a map |
+| `scanner/morph-web.js` | Reads a public website into a map |
+| `examples/` | Ready-made maps, including a before and after |
 
 ## Licence and credit
 MIT. You can use, change and share this freely, as long as you keep the copyright notice in `LICENSE`.
