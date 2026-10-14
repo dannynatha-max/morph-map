@@ -20,7 +20,7 @@ Scan an old version and a new one (an old git tag, or an old copy from the Wayba
 
 ## Use it responsibly
 - **For learning.** Only scan code you are allowed to read and websites' public pages.
-- **Be gentle.** The website scanner waits between pages and stops at 40. Respect a site's terms and robots.txt.
+- **Be gentle.** The website scanner reads the site's robots.txt first and skips any page the site asks crawlers to avoid. It waits between pages and stops at 40. Respect a site's terms too.
 - **It only sees the outside of a website.** Server code, databases and anything behind a login stay private.
 - A map is a reading aid, not a copy of anyone's product.
 

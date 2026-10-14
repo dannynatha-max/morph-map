@@ -10,12 +10,23 @@
 
    What it finds: sections (grouped pages), forms, outside services the site loads
    (analytics, widgets, CRMs, video) and the links between sections.
-   What it cannot see: server code, databases, anything behind a login. */
+   What it cannot see: server code, databases, anything behind a login.
+   It reads the site's robots.txt first and skips any page the site asks crawlers not to read. */
 (async (LIMIT = 40, MAX_BOXES = 14, DELAY_MS = 300) => {
   const host = location.hostname.replace(/^www\./, ''), seen = new Map(), queue = [location.origin + location.pathname];
   const norm = (h, base) => { try { const u = new URL(h, base); u.hash = ''; u.search = ''; if (u.hostname.replace(/^www\./, '') === host) { u.protocol = location.protocol; u.hostname = location.hostname; } return u; } catch (e) { return null; } };
+  const rules = [];
+  try { const t = await fetch(location.origin + '/robots.txt', { credentials: 'omit' }).then(r => r.ok ? r.text() : '');
+    let mine = false, inAgents = false;
+    t.split(/\r?\n/).forEach(line => { const m = line.replace(/#.*/, '').trim().match(/^([\w-]+)\s*:\s*(.*)$/); if (!m) return; const k = m[1].toLowerCase(), v = m[2].trim();
+      if (k === 'user-agent') { if (!inAgents) mine = false; inAgents = true; if (v === '*') mine = true; return; }
+      inAgents = false; if (mine && (k === 'disallow' || k === 'allow') && v) rules.push({ allow: k === 'allow', re: new RegExp('^' + v.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*').replace(/\\\$$/, '$')), len: v.length }); });
+  } catch (e) {}
+  const blocked = path => { let best = null; rules.forEach(r => { if (r.re.test(path) && (!best || r.len > best.len || (r.len === best.len && r.allow))) best = r; }); return best ? !best.allow : false; };
+  let skipped = 0;
   while (queue.length && seen.size < LIMIT) {
     const url = queue.shift(); if (seen.has(url)) continue;
+    if (blocked(new URL(url).pathname)) { seen.set(url, { robots: 1 }); skipped++; continue; }
     let html = '';
     try { const r = await fetch(url, { credentials: 'omit' }); if (!r.ok) { seen.set(url, { dead: 1 }); continue; } if (!(r.headers.get('content-type') || '').includes('html')) { seen.set(url, { skip: 1 }); continue; } html = await r.text(); }
     catch (e) { seen.set(url, { err: 1 }); continue; }
@@ -66,6 +77,7 @@
   const map = { today: { nodes, edges: E }, planned: JSON.parse(JSON.stringify({ nodes, edges: E })) };
   const text = JSON.stringify(map, null, 1);
   try { copy(text); console.log('Map copied. Paste it into a file called map.json, then Import it in Morph Map.'); } catch (e) { console.log(text); }
+  if (skipped) console.log('Skipped ' + skipped + ' pages the site asked crawlers not to read.');
   console.log(pages.length + ' pages read, ' + [...seen.values()].filter(p => p.dead).length + ' dead links, ' + nodes.length + ' boxes.');
   return map;
 })();
