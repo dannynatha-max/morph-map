@@ -2,6 +2,7 @@
 /* morph-scan: read a code folder and write a Morph Map file.
    node morph-scan.js <folder> [--out map.json] [--max 22]
    Boxes = files (small projects) or folders (big ones). Arrows = imports.
+   The file also keeps the raw scan (files, lines, imports) so Morph Map can work out scores and findings.
    Kinds: page = entry point, tab = screens/routes, data = models/db/stores, out = outside packages, mod = everything else. */
 const fs = require('fs'), path = require('path');
 
@@ -84,15 +85,16 @@ function scan(root, max){
   const dirs = G.filter(g => g.dir).map(g => g.key).sort((a,b) => b.length - a.length);
   let keyOf = f => owner[f] || dirs.find(d => f.startsWith(d+'/')) || 'other';
   if(G.length > max){ const cnt = {}; list.forEach(f => cnt[keyOf(f)] = (cnt[keyOf(f)]||0)+1); const keep = new Set(Object.entries(cnt).sort((a,b) => b[1]-a[1]).slice(0, max-1).map(x => x[0])); const k0 = keyOf; keyOf = f => keep.has(k0(f)) ? k0(f) : 'other'; }
-  const groups = {}, edges = {}, ext = {};
+  const groups = {}, edges = {}, ext = {}, raw = [];
   for(const f of list){
     const g = keyOf(f); (groups[g] = groups[g] || {files:[], lines:0}).files.push(f);
     let src = ''; try { src = fs.readFileSync(path.join(root, f), 'utf8'); } catch(e){}
-    groups[g].lines += src.split('\n').length;
+    const lines = src.split('\n').length, rf = {f, lines, imp:[], ext:[], entry:isEntry(f)}; raw.push(rf);
+    groups[g].lines += lines;
     for(const spec of imports(src, f)){
       const r = resolve(spec, f, files, root); if(!r) continue;
-      if(r.file){ const h = keyOf(r.file); if(h !== g){ const k = g+'>'+h; edges[k] = (edges[k]||0)+1; } }
-      else if(r.ext && !BUILTIN.has(r.ext) && /^[@a-z0-9][\w./-]*$/i.test(r.ext)){ (ext[r.ext] = ext[r.ext] || {n:0, from:new Set()}); ext[r.ext].n++; ext[r.ext].from.add(g); }
+      if(r.file){ if(r.file !== f && !rf.imp.includes(r.file)) rf.imp.push(r.file); const h = keyOf(r.file); if(h !== g){ const k = g+'>'+h; edges[k] = (edges[k]||0)+1; } }
+      else if(r.ext && !BUILTIN.has(r.ext) && /^[@a-z0-9][\w./-]*$/i.test(r.ext)){ if(!rf.ext.includes(r.ext)) rf.ext.push(r.ext); (ext[r.ext] = ext[r.ext] || {n:0, from:new Set()}); ext[r.ext].n++; ext[r.ext].from.add(g); }
     }
   }
   const extTop = Object.entries(ext).sort((a,b) => b[1].n-a[1].n).slice(0, Math.max(3, Math.min(8, max - Object.keys(groups).length)));
@@ -122,15 +124,16 @@ function scan(root, max){
       n.x = Math.round(620 - (cnt-1)*gap/2 + c*gap); n.y = 60 + Number(l)*170 + r*90 + (c%2 ? 20 : 0); });
   }
   nodes.forEach(n => delete n.files);
-  return {nodes, edges:E, stats:{files:list.length, boxes:nodes.length, arrows:E.length}};
+  return {nodes, edges:E, scan:{kind:'code', name:path.basename(root), files:raw}, stats:{files:list.length, boxes:nodes.length, arrows:E.length}};
 }
 
+module.exports = {scan};
 if(require.main === module){
   const a = process.argv.slice(2); const root = a[0];
   const out = a.includes('--out') ? a[a.indexOf('--out')+1] : null;
   const max = a.includes('--max') ? Number(a[a.indexOf('--max')+1]) : 22;
   const m = scan(path.resolve(root), max);
-  const doc = {today:{nodes:m.nodes, edges:m.edges}, planned:JSON.parse(JSON.stringify({nodes:m.nodes, edges:m.edges}))};
+  const doc = {meta:{mode:'code', name:m.scan.name}, today:{nodes:m.nodes, edges:m.edges}, planned:JSON.parse(JSON.stringify({nodes:m.nodes, edges:m.edges})), scans:{today:m.scan}};
   if(out) fs.writeFileSync(out, JSON.stringify(doc, null, 1)); else process.stdout.write(JSON.stringify(doc));
   console.error(path.basename(path.resolve(root))+': '+m.stats.files+' files read, '+m.stats.boxes+' boxes, '+m.stats.arrows+' arrows');
 }

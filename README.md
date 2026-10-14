@@ -1,10 +1,19 @@
-# Morph Map 2: reverse mode
+# Morph Map 3: map, report, plan
 
 Everything in Morph Map 1, plus **scanners that read an existing project and draw it for you**: a code repository, an app, or a public website. Made for learning how real projects are put together and how they change over time.
 
 ![Morph Map demo](demo.gif)
 
 **[Try the scanned examples](https://dannynatha-max.github.io/morph-map/demo-scans.html)**: seven real projects, from a 15-file tool to a 386-file React app, plus Express from 2014 to today and two websites.
+
+## New in 3: the report
+Every map now comes with a **Report** tab, worked out from the real scan, not typed by hand:
+- **Complexity score** (0 to 100) for Today and Planned, using the same visible formula, so you can see whether the plan is actually simpler.
+- **Website audit:** structure findings (repeated menus, look-alike pages, unreachable checkout, deep pages, broken links, outside services) and a passive **security grade** from headers and cookies any browser already receives.
+- **Learn mode for code:** where to start reading, the most-used files, import loops, big files and outside packages. "Show on map" jumps to the file.
+- **Plan check:** tick which findings your plan fixes, then scan again after building to confirm.
+
+Examples (in the Examples menu): a fictional shop audit (Harbour & Pine), and Express 2014 vs today.
 
 ## 1. Map a code repository or app
 ```
