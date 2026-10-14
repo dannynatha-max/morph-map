@@ -3,6 +3,7 @@
    Used by index.html, and by node for tests (module.exports). */
 (function (root) {
   const SEC = { red: 3, amber: 2, info: 1, green: 0 };
+  const STOP = new Set('the and for how get set add use new about check find apply what why when who your my our all see view make pay buy can contact help report register sign log'.split(' '));
   const pl = (n, one, many) => n + ' ' + (n === 1 ? one : many);
 
   /* ---------- map score: same formula for Today and Planned ---------- */
@@ -86,6 +87,7 @@
   /* ---------- websites ---------- */
   function webReport(s) {
     const F = [], pages = s.pages || [], N = pages.length || 1, paths = new Set(pages.map(p => p.path));
+    if (!pages.length) F.push({ sev: 'info', area: 'Structure', title: s.skipped ? 'The site asks crawlers not to read its pages' : 'No pages could be read', detail: s.skipped ? 'Its robots.txt blocks every page, so Morph Map stopped. Only the security settings of the home page were checked.' : 'The site returned no readable pages. It may need a login or build its pages with scripts.' });
     // 1. same menu on every page
     const cnt = {}; pages.forEach(p => new Set(p.links).forEach(l => cnt[l] = (cnt[l] || 0) + 1));
     const menu = Object.keys(cnt).filter(l => cnt[l] >= N * 0.8);
@@ -93,13 +95,13 @@
     // 2. look-alike sibling pages
     const fam = {}; [...paths].forEach(p => { const parts = p.split('/').filter(Boolean); if (parts.length < 1) return;
       const last = parts[parts.length - 1].replace(/\.html?$/, ''), stem = last.split(/[-_]/)[0], key = parts.slice(0, -1).join('/') + '|' + stem;
-      if (stem.length >= 3) (fam[key] = fam[key] || []).push(last); });
+      if (stem.length >= 3 && !STOP.has(stem)) (fam[key] = fam[key] || []).push(last); });
     const fams = Object.values(fam).filter(v => v.length >= 3).sort((a, b) => b.length - a.length);
     if (fams.length) { const n = fams.reduce((a, v) => a + v.length, 0);
       F.push({ sev: 'amber', area: 'Structure', title: n + ' look-alike pages could be ' + fams.length, detail: fams.slice(0, 3).map(v => v.join(', ')).join('; ') + '. Each group shares a name, so it is likely one page with filters.', fix: 'Merge each group into one page with filter buttons.' }); }
     // 3. buy path
     const all = new Set([...paths, ...pages.flatMap(p => p.links)]);
-    const shop = [...all].some(p => /\/(products?|shop|collections?)\//i.test(p));
+    const shop = [...all].filter(p => /\/(products?|shop)\/[^/]+/i.test(p)).length >= 3;
     const cart = [...all].some(p => /(cart|checkout|basket|bag)(\/|$|\.)/i.test(p));
     if (shop && !cart) F.push({ sev: 'red', area: 'Structure', title: 'Checkout cannot be reached by a link', detail: 'Product pages exist, but no page links to a cart or checkout. Only scripts open it, so search engines and some assistive tools never find it.', fix: 'Add a plain link to the cart in the header.' });
     // 4. clicks from home
@@ -118,7 +120,7 @@
     if (s.https === false) sec.push({ sev: 'red', title: 'Site is not on HTTPS', detail: 'Everything travels unencrypted.' });
     if (s.mixed) sec.push({ sev: 'red', title: s.mixed + ' insecure (http) files on secure pages', detail: 'Browsers may block them, and they can be tampered with.' });
     const hsts = h['strict-transport-security'], age = hsts ? Number((hsts.match(/max-age=(\d+)/) || [])[1] || 0) : 0;
-    if (!hsts) sec.push({ sev: 'amber', title: 'HTTPS is not enforced (no HSTS)', detail: 'Browsers are not told to always use the secure version.' });
+    if (!hsts) sec.push({ sev: 'amber', title: 'No HSTS header seen', detail: 'Browsers are not told to always use the secure version, unless the site is on the browsers\' built-in preload list. Worth checking at hstspreload.org.' });
     else if (age < 86400) sec.push({ sev: 'red', title: 'HSTS lasts only ' + Math.round(age / 60) + ' minutes', detail: 'The protection expires almost straight away. Common practice is at least 6 months.' });
     else if (age < 15552000) sec.push({ sev: 'amber', title: 'HSTS is short (' + Math.round(age / 86400) + ' days)', detail: 'Common practice is at least 6 months.' });
     const csp = h['content-security-policy'];
