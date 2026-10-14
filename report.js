@@ -16,10 +16,71 @@
     const dist = {}, q = []; tops.forEach(t => { dist[t] = 0; q.push(t); });
     while (q.length) { const c = q.shift(); (out[c] || []).forEach(t => { if (dist[t] == null) { dist[t] = dist[c] + 1; q.push(t); } }); }
     const depth = Math.max(0, ...Object.values(dist));
-    const size = 35 * Math.min(1, boxes / 40), tangle = 40 * Math.min(1, per / 3), chain = 25 * Math.min(1, depth / 6);
-    const score = Math.round(size + tangle + chain);
-    return { boxes, arrows, per: Math.round(per * 10) / 10, depth, score, level: score < 35 ? 'Light' : score < 65 ? 'Medium' : 'Heavy',
-      parts: { size: Math.round(size), tangle: Math.round(tangle), chain: Math.round(chain) } };
+    // copies: dashed arrows between two of your own boxes where one is a data store (the same data kept in two places)
+    const kind = {}; nodes.forEach(n => kind[n.id] = n.kind);
+    const copies = edges.filter(e => e.dash && kind[e.from] !== 'out' && kind[e.to] !== 'out' && (kind[e.from] === 'data' || kind[e.to] === 'data')).length;
+    const size = 30 * Math.min(1, boxes / 40), tangle = 35 * Math.min(1, per / 3), chain = 20 * Math.min(1, depth / 6), copy = 15 * Math.min(1, copies / 3);
+    const score = Math.round(size + tangle + chain + copy);
+    return { boxes, arrows, per: Math.round(per * 10) / 10, depth, copies, score, level: score < 35 ? 'Light' : score < 65 ? 'Medium' : 'Heavy',
+      parts: { size: Math.round(size), tangle: Math.round(tangle), chain: Math.round(chain), copies: Math.round(copy) } };
+  }
+
+  /* ---------- AI blast radius: everything reachable by following arrows from one box ---------- */
+  function blast(m, start) {
+    const out = {}; ((m && m.edges) || []).forEach(e => (out[e.from] = out[e.from] || []).push(e.to));
+    const seen = new Set([start]), q = [start], hops = { [start]: 0 };
+    while (q.length) { const c = q.shift(); (out[c] || []).forEach(t => { if (!seen.has(t)) { seen.add(t); hops[t] = hops[c] + 1; q.push(t); } }); }
+    seen.delete(start); return { ids: [...seen], hops };
+  }
+
+  /* ---------- plan brief for an AI coder: only what the maps and scan actually say ---------- */
+  function brief(doc) {
+    const T = doc.today || { nodes: [], edges: [] }, P = doc.planned || { nodes: [], edges: [] }, meta = doc.meta || {};
+    const byT = {}, byP = {}; T.nodes.forEach(n => byT[n.id] = n); P.nodes.forEach(n => byP[n.id] = n);
+    const nm = (n) => (n.label || n.id) + (n.sub ? ' (' + n.sub + ')' : '');
+    const ek = e => e.from + '>' + e.to, eT = new Set(T.edges.map(ek)), eP = new Set(P.edges.map(ek));
+    const L = [];
+    L.push('# Change plan from Morph Map');
+    L.push('');
+    L.push('Project: ' + (meta.name || 'unnamed') + (meta.mode ? ' (' + (meta.mode === 'web' ? 'website' : 'codebase') + ')' : ''));
+    L.push('Goal: change the system from the Today map to the Planned map below. Work in small steps, keep behaviour working, and ask before deleting anything you are unsure about.');
+    L.push('');
+    const add = P.nodes.filter(n => !byT[n.id]), del = T.nodes.filter(n => !byP[n.id]);
+    const chg = P.nodes.filter(n => { const o = byT[n.id]; return o && ((n.label || '') !== (o.label || '') || (n.sub && n.sub !== o.sub) || (n.note && n.note !== o.note)); });
+    if (add.length) { L.push('## Add'); add.forEach(n => L.push('- ' + nm(n) + (n.note ? ': ' + n.note : ''))); L.push(''); }
+    if (chg.length) { L.push('## Change'); chg.forEach(n => { const o = byT[n.id]; L.push('- ' + (o.label || o.id) + (o.label !== n.label ? ' becomes ' + n.label : '') + (n.sub && n.sub !== o.sub ? '. Now: ' + n.sub : '') + (n.note ? '. Notes: ' + n.note : '') + (doc.meta && doc.meta.mode === 'code' ? ' [path: ' + n.id + ']' : '')); }); L.push(''); }
+    if (del.length) { L.push('## Remove or merge'); del.forEach(n => L.push('- ' + nm(n) + (doc.meta && doc.meta.mode === 'code' ? ' [path: ' + n.id + ']' : ''))); L.push(''); }
+    const lab = id => ((byP[id] || byT[id] || {}).label || id);
+    const ea = P.edges.filter(e => !eT.has(ek(e))), er = T.edges.filter(e => !eP.has(ek(e)));
+    if (ea.length) { L.push('## New connections'); ea.forEach(e => L.push('- ' + lab(e.from) + ' to ' + lab(e.to) + (e.label ? ' (' + e.label + ')' : ''))); L.push(''); }
+    if (er.length) { L.push('## Connections to remove'); L.push('- ' + er.length + ' connections go away, for example: ' + er.slice(0, 6).map(e => lab(e.from) + ' to ' + lab(e.to)).join('; ')); L.push(''); }
+    const r = doc.scans && doc.scans.today ? report(doc.scans.today) : null, h = (meta.handled || []);
+    if (r) { const fx = r.findings.filter(f => h.includes(f.title));
+      if (fx.length) { L.push('## Findings this plan must fix (from the scan)'); fx.forEach(f => L.push('- ' + f.title + '. ' + f.detail + (f.fix ? ' Fix: ' + f.fix : ''))); L.push(''); } }
+    const a = mapMetrics(T), b = mapMetrics(P);
+    L.push('## Check when done');
+    L.push('- Re-scan with Morph Map. Expected: about ' + b.boxes + ' boxes and ' + b.arrows + ' arrows (now ' + a.boxes + ' and ' + a.arrows + '), complexity ' + b.score + ' (now ' + a.score + ').');
+    if (r && h.length) L.push('- The findings listed above should no longer appear.');
+    return L.join('\n');
+  }
+
+  /* ---------- Learn-mode quiz, built from the scan ---------- */
+  function quiz(s, seed) {
+    if (!s || s.kind !== 'code') return [];
+    const files = s.files || [], Q = [], usedBy = {}; files.forEach(f => f.imp.forEach(t => usedBy[t] = (usedBy[t] || 0) + 1));
+    let r = seed || 1; const rnd = () => (r = (r * 9301 + 49297) % 233280) / 233280;
+    const pick = (arr, n, not) => { const a = arr.filter(x => !not.includes(x)); const o = []; while (a.length && o.length < n) o.push(a.splice(Math.floor(rnd() * a.length), 1)[0]); return o; };
+    const mix = (right, wrong) => { const o = [right, ...wrong]; for (let i = o.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [o[i], o[j]] = [o[j], o[i]]; } return o; };
+    const names = files.map(f => f.f);
+    const top = Object.entries(usedBy).sort((a, b) => b[1] - a[1])[0];
+    if (top && names.length >= 4) Q.push({ q: 'Which file is used by the most other files?', a: top[0], opts: mix(top[0], pick(names, 3, [top[0]])), why: top[0] + ' is imported by ' + top[1] + ' files, so it is a core building block.' });
+    const big = files.slice().sort((a, b) => b.lines - a.lines)[0];
+    if (big && names.length >= 4) Q.push({ q: 'Which file is the biggest?', a: big.f, opts: mix(big.f, pick(names, 3, [big.f])), why: big.f + ' has ' + big.lines + ' lines. Big files usually do several jobs.' });
+    const entry = files.find(f => f.entry);
+    if (entry && names.length >= 4) Q.push({ q: 'Where does the program start?', a: entry.f, opts: mix(entry.f, pick(names, 3, [entry.f])), why: entry.f + ' is the entry point. Read it first, then follow its imports.' });
+    const pk = {}; files.forEach(f => f.ext.forEach(e => pk[e] = (pk[e] || 0) + 1)); const tp = Object.entries(pk).sort((a, b) => b[1] - a[1])[0];
+    if (tp && names.length >= 4) { const others = ['lodash', 'react', 'axios', 'moment', 'chalk', 'express', 'debug', 'uuid'].filter(x => x !== tp[0] && !pk[x]); Q.push({ q: 'Which outside package does this project use the most?', a: tp[0], opts: mix(tp[0], pick(others, 3, [])), why: tp[0] + ' is imported in ' + tp[1] + ' files.' }); }
+    return Q;
   }
 
   /* ---------- websites ---------- */
@@ -101,6 +162,6 @@
   }
 
   function report(scan) { return !scan ? null : scan.kind === 'web' ? webReport(scan) : codeReport(scan); }
-  const api = { mapMetrics, report };
+  const api = { mapMetrics, report, blast, brief, quiz };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.MorphReport = api;
 })(this);
