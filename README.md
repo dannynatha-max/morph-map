@@ -94,7 +94,7 @@ Each real site exposed a rule that was too eager. Those rules were fixed before 
 
 ## Licence and credit
 
-MIT. Use it, change it and share it freely, as long as you keep the copyright notice in `LICENSE`.
+Morph Map is free for individuals, learners, open-source projects and non-commercial use. Companies and other commercial users need a paid licence. See `LICENSE` for the full terms.
 
 Using Morph Map in a video, course, article or research? Please credit it. GitHub's **Cite this repository** button gives you the citation.
 
