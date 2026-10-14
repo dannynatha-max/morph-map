@@ -1,13 +1,13 @@
 cff-version: 1.2.0
 message: "If you use or build on this work, please cite it as below."
-title: "Morph Map: reverse mode for repos, apps and websites"
-abstract: "Morph Map plus scanners that read a code repository or a public website and draw it as an animated, editable map, so people can learn how real projects are built and see how they changed."
+title: "Morph Map: map, plan and play the change for codebases and websites"
+abstract: "Morph Map scans a codebase or public website into an editable map, lets you sketch the planned version, scores both with a visible formula, reports findings worked out from the scan, and turns the change into a brief for an AI coder."
 type: software
 authors:
   - family-names: "Natha"
     given-names: "Danny"
 version: 3.0.0
-date-released: "2026-10-14"
+date-released: "2026-10-15"
 license: MIT
 repository-code: "https://github.com/dannynatha-max/morph-map"
 url: "https://dannynatha-max.github.io/morph-map/"
