@@ -710,7 +710,7 @@ async function saveFile(name,text,type){if(dl){try{await dl.save({filename:name,
 $('export').onclick=async()=>{const text=JSON.stringify(doc(),null,1);
   if(dl){try{await dl.save({filename:'morph-map.json',data:text});setStatus('Exported')}catch(e){setStatus('Export cancelled')}return}
   const blob=new Blob([text],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='morph-map.json';document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)};
-$('import').onchange=e=>{const f=e.target.files[0];if(!f)return;f.text().then(t=>{const o=JSON.parse(t);if(!o.today&&!o.planned)throw 0;loadMaps(o);flush()}).catch(()=>setStatus('That file is not a Morph Map export',true));e.target.value=''};
+$('import').onchange=e=>{const f=e.target.files[0];if(!f)return;f.text().then(t=>{const o=JSON.parse(t);if(!o.today&&!o.planned)throw 0;const hasMap=m=>!!(m&&m.nodes&&m.nodes.length);if(!hasMap(o.today)&&!hasMap(o.planned)){setStatus('This file has no boxes to map. Re-run the scanner on the site and import its file.',true);return}loadMaps(o);flush()}).catch(()=>setStatus('That file is not a Morph Map export',true));e.target.value=''};
 $('examples').onchange=e=>{const v=e.target.value;e.target.value='';if(!v)return;if(undo.length&&!confirmSwap())return;loadMaps(clone(EXAMPLES[v]));flush()};
 let armed=0;function confirmSwap(){if(Date.now()-armed<4000)return true;armed=Date.now();setStatus('Your edits will be replaced. Pick the example again to confirm',true);return false}
 /* ---------- load ---------- */
