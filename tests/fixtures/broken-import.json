@@ -1,0 +1,98 @@
+{
+ "meta": {
+  "mode": "code",
+  "name": "broken-import"
+ },
+ "today": {
+  "nodes": [
+   {
+    "id": "src/a.js",
+    "label": "a",
+    "sub": "2 lines",
+    "kind": "mod",
+    "note": "",
+    "x": 620,
+    "y": 230
+   },
+   {
+    "id": "src/main.js",
+    "label": "main",
+    "sub": "4 lines",
+    "kind": "page",
+    "note": "",
+    "x": 620,
+    "y": 60
+   }
+  ],
+  "edges": [
+   {
+    "from": "src/main.js",
+    "to": "src/a.js",
+    "label": "",
+    "dash": false
+   }
+  ]
+ },
+ "planned": {
+  "nodes": [
+   {
+    "id": "src/a.js",
+    "label": "a",
+    "sub": "2 lines",
+    "kind": "mod",
+    "note": "",
+    "x": 620,
+    "y": 230
+   },
+   {
+    "id": "src/main.js",
+    "label": "main",
+    "sub": "4 lines",
+    "kind": "page",
+    "note": "",
+    "x": 620,
+    "y": 60
+   }
+  ],
+  "edges": [
+   {
+    "from": "src/main.js",
+    "to": "src/a.js",
+    "label": "",
+    "dash": false
+   }
+  ]
+ },
+ "scans": {
+  "today": {
+   "kind": "code",
+   "name": "broken-import",
+   "files": [
+    {
+     "f": "src/a.js",
+     "lines": 2,
+     "imp": [],
+     "ext": [],
+     "entry": false
+    },
+    {
+     "f": "src/main.js",
+     "lines": 4,
+     "imp": [
+      "src/a.js"
+     ],
+     "ext": [],
+     "entry": true
+    }
+   ],
+   "analysed": 2,
+   "unresolved": [
+    {
+     "from": "src/main.js",
+     "spec": "./missing"
+    }
+   ],
+   "unresolvedCount": 1
+  }
+ }
+}

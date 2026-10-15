@@ -180,7 +180,7 @@ code{font:500 12px var(--f-mono);background:var(--paper);padding:1px 4px;border-
           <div><label class="lbl" for="f-note">Notes for the build</label><textarea id="f-note" placeholder="What should change here, questions for your team"></textarea></div>
           <div id="connect-msg" class="connecting" hidden>Now tap the box this arrow should point to. <button class="btn" id="connect-cancel" style="margin-left:6px">Cancel</button></div>
           <div class="row"><button class="btn primary" id="connect">Draw arrow from here</button><button class="btn" id="del-node">Delete box</button></div>
-          <div class="row"><button class="btn" id="blast-btn">AI blast radius from here</button></div>
+          <div class="row"><button class="btn" id="blast-btn">Show what is reachable from here</button></div>
           <div id="blast-msg" class="hint" hidden></div>
         </div>
       </div>
@@ -236,7 +236,7 @@ code{font:500 12px var(--f-mono);background:var(--paper);padding:1px 4px;border-
       parts: { size: Math.round(size), tangle: Math.round(tangle), chain: Math.round(chain), copies: Math.round(copy) } };
   }
 
-  /* ---------- AI blast radius: everything reachable by following arrows from one box ---------- */
+  /* ---------- Reachable from here: everything reachable by following arrows from one box ---------- */
   function blast(m, start) {
     const out = {}; ((m && m.edges) || []).forEach(e => (out[e.from] = out[e.from] || []).push(e.to));
     const seen = new Set([start]), q = [start], hops = { [start]: 0 };
@@ -577,7 +577,7 @@ function renderReport(){
   if(showBrief)h+='<textarea id="brief-text" readonly aria-label="AI coder brief">'+escH(MorphReport.brief(doc()))+'</textarea><div class="row" style="margin-top:6px"><button class="btn primary" id="brief-copy">Copy</button><button class="btn" id="brief-dl">Download .md</button><button class="btn" id="brief-hide">Hide</button></div>';
   else h+='<button class="btn primary" id="brief-show">Write the AI coder brief</button>';
   h+='</div>';
-  h+='<details><summary>How this is scored</summary><ul><li><b>Complexity</b> (0 to 100) = size (up to 30, from the number of boxes) + tangle (up to 35, from arrows per box) + depth (up to 20, from steps from the top) + copies (up to 15, from dashed arrows touching a data store, meaning the same data kept in two places). Under 35 is Light, under 65 is Medium, 65 and up is Heavy. The same formula runs on both plans.</li>'+(r&&r.kind==='web'?'<li><b>Security</b> uses only what any browser already receives: response headers and cookies scripts can read. Red if any red finding, amber if any amber. No logins, probing or form sending.</li><li>Findings are plain rules over the scan, for example a menu counts as repeated when the same link is on 80% of pages.</li>':'<li>Findings come from the import graph: where the program starts, the most-used files, import loops, big files and files that connect to nothing.</li>')+'</ul></details>';
+  h+='<details><summary>How this is scored</summary><ul><li><b>Complexity</b> (0 to 100) = size (up to 30, from the number of boxes) + tangle (up to 35, from arrows per box) + depth (up to 20, from steps from the top) + copies (up to 15, from dashed arrows touching a data store, meaning the same data kept in two places). Under 35 is Light, under 65 is Medium, 65 and up is Heavy. The same formula runs on both plans. It measures structure, not code quality: a high score is a reason to look, not a verdict.</li>'+(r&&r.kind==='web'?'<li><b>Security</b> uses only what any browser already receives: response headers and cookies scripts can read. Red if any red finding, amber if any amber. No logins, probing or form sending.</li><li>Findings are plain rules over the scan, for example a menu counts as repeated when the same link is on 80% of pages.</li>':'<li>Findings come from the import graph: where the program starts, the most-used files, import loops, big files and files that connect to nothing.</li>')+'</ul></details>';
   if(r&&r.kind==='web')h+='<p class="note">Only scan sites you own or have permission to review. Share security findings privately with the site owner.</p>';
   $('rep').innerHTML=h;
   $('rep').querySelectorAll('button[data-q]').forEach(b=>b.onclick=()=>{quizPick=+b.dataset.q;renderReport()});
@@ -624,8 +624,8 @@ $('del-node').onclick=()=>{if(!sel)return;const id=sel.id;change(m=>{m.nodes=m.n
 $('del-edge').onclick=()=>{if(!sel)return;const i=sel.id;change(m=>m.edges.splice(i,1));sel=null;showPanel();render()};
 $('flip').onclick=()=>{if(!sel)return;const i=sel.id;change(m=>{const e=m.edges[i];[e.from,e.to]=[e.to,e.from]});showPanel();render()};
 function setBlast(id){if(!id||blastFrom===id){blastFrom=null;blastSet=null}else{blastFrom=id;blastSet=new Set(MorphReport.blast(cur(),id).ids)}showBlast();render()}
-function showBlast(){const b=$('blast-btn'),m=$('blast-msg');if(!b)return;const on=blastFrom&&sel&&sel.id===blastFrom;b.textContent=on?'Clear blast radius':'AI blast radius from here';m.hidden=!on;
-  if(on){const mm=cur(),names=[...blastSet].map(id=>(mm.nodes.find(n=>n.id===id)||{}).label||id);m.textContent=names.length?'If an AI tool were connected here, it could reach '+names.length+' boxes by following the arrows: '+names.slice(0,8).join(', ')+(names.length>8?' and '+(names.length-8)+' more':'')+'. Worked out from this map only.':'Nothing else is reachable from here by following the arrows.'}}
+function showBlast(){const b=$('blast-btn'),m=$('blast-msg');if(!b)return;const on=blastFrom&&sel&&sel.id===blastFrom;b.textContent=on?'Clear blast radius':'Show what is reachable from here';m.hidden=!on;
+  if(on){const mm=cur(),names=[...blastSet].map(id=>(mm.nodes.find(n=>n.id===id)||{}).label||id);m.textContent=names.length?'Reachable from here by following the arrows: '+names.length+' boxes. '+names.slice(0,8).join(', ')+(names.length>8?' and '+(names.length-8)+' more':'')+'. Only the arrows on this map count, so anything missing from the map is not shown.':'Nothing else is reachable from here by following the arrows.'}}
 $('blast-btn').onclick=()=>{if(sel&&sel.type==='node')setBlast(sel.id)};
 $('connect').onclick=()=>{if(!sel||sel.type!=='node')return;connectFrom=sel.id;showPanel()};
 $('connect-cancel').onclick=()=>{connectFrom=null;showPanel()};
@@ -710,7 +710,7 @@ async function saveFile(name,text,type){if(dl){try{await dl.save({filename:name,
 $('export').onclick=async()=>{const text=JSON.stringify(doc(),null,1);
   if(dl){try{await dl.save({filename:'morph-map.json',data:text});setStatus('Exported')}catch(e){setStatus('Export cancelled')}return}
   const blob=new Blob([text],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='morph-map.json';document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)};
-$('import').onchange=e=>{const f=e.target.files[0];if(!f)return;f.text().then(t=>{const o=JSON.parse(t);if(!o.today&&!o.planned)throw 0;loadMaps(o);flush()}).catch(()=>setStatus('That file is not a Morph Map export',true));e.target.value=''};
+$('import').onchange=e=>{const f=e.target.files[0];if(!f)return;f.text().then(t=>{const o=JSON.parse(t);if(!o.today&&!o.planned)throw 0;const hasMap=m=>!!(m&&m.nodes&&m.nodes.length);if(!hasMap(o.today)&&!hasMap(o.planned)){setStatus('This file has no boxes to map. Re-run the scanner on the site and import its file.',true);return}loadMaps(o);flush()}).catch(()=>setStatus('That file is not a Morph Map export',true));e.target.value=''};
 $('examples').onchange=e=>{const v=e.target.value;e.target.value='';if(!v)return;if(undo.length&&!confirmSwap())return;loadMaps(clone(EXAMPLES[v]));flush()};
 let armed=0;function confirmSwap(){if(Date.now()-armed<4000)return true;armed=Date.now();setStatus('Your edits will be replaced. Pick the example again to confirm',true);return false}
 /* ---------- load ---------- */

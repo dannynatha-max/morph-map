@@ -9,7 +9,8 @@
 - Plan check: tick the findings your plan fixes.
 - AI coder brief: turns the difference between the maps into a step-by-step plan.
 - Quiz built from the scan, in Learn mode.
-- AI blast radius: everything reachable from a box by following the arrows.
+- Reachable from here: everything reachable from a box by following the arrows (only mapped arrows count).
+- Code scans list local imports that could not be followed, so partial maps are visible.
 - The score now counts data copies (dashed arrows touching a data store).
 - Both scanners keep the raw scan data, so the report can be worked out from it.
 - Examples: a fictional shop audit and Express 2014 vs today.

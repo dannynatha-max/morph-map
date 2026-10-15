@@ -86,13 +86,15 @@ function scan(root, max){
   let keyOf = f => owner[f] || dirs.find(d => f.startsWith(d+'/')) || 'other';
   if(G.length > max){ const cnt = {}; list.forEach(f => cnt[keyOf(f)] = (cnt[keyOf(f)]||0)+1); const keep = new Set(Object.entries(cnt).sort((a,b) => b[1]-a[1]).slice(0, max-1).map(x => x[0])); const k0 = keyOf; keyOf = f => keep.has(k0(f)) ? k0(f) : 'other'; }
   const groups = {}, edges = {}, ext = {}, raw = [];
+  const unresolved = [];
   for(const f of list){
     const g = keyOf(f); (groups[g] = groups[g] || {files:[], lines:0}).files.push(f);
     let src = ''; try { src = fs.readFileSync(path.join(root, f), 'utf8'); } catch(e){}
     const lines = src.split('\n').length, rf = {f, lines, imp:[], ext:[], entry:isEntry(f)}; raw.push(rf);
     groups[g].lines += lines;
     for(const spec of imports(src, f)){
-      const r = resolve(spec, f, files, root); if(!r) continue;
+      const r = resolve(spec, f, files, root);
+      if(!r){ if(/^\./.test(spec)) unresolved.push({from:f, spec}); continue; }
       if(r.file){ if(r.file !== f && !rf.imp.includes(r.file)) rf.imp.push(r.file); const h = keyOf(r.file); if(h !== g){ const k = g+'>'+h; edges[k] = (edges[k]||0)+1; } }
       else if(r.ext && !BUILTIN.has(r.ext) && /^[@a-z0-9][\w./-]*$/i.test(r.ext)){ if(!rf.ext.includes(r.ext)) rf.ext.push(r.ext); (ext[r.ext] = ext[r.ext] || {n:0, from:new Set()}); ext[r.ext].n++; ext[r.ext].from.add(g); }
     }
@@ -124,7 +126,7 @@ function scan(root, max){
       n.x = Math.round(620 - (cnt-1)*gap/2 + c*gap); n.y = 60 + Number(l)*170 + r*90 + (c%2 ? 20 : 0); });
   }
   nodes.forEach(n => delete n.files);
-  return {nodes, edges:E, scan:{kind:'code', name:path.basename(root), files:raw}, stats:{files:list.length, boxes:nodes.length, arrows:E.length}};
+  return {nodes, edges:E, scan:{kind:'code', name:path.basename(root), files:raw, analysed:list.length, unresolved:unresolved.slice(0,200), unresolvedCount:unresolved.length}, stats:{files:list.length, boxes:nodes.length, arrows:E.length}};
 }
 
 module.exports = {scan};

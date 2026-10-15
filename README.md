@@ -18,7 +18,7 @@ Morph Map scans a real project and draws it as an editable map. You draw the pla
 | **Report** | Scores and findings worked out from the scan, each one a plain rule you can check. |
 | **Brief** | Turn the difference between the two maps into a step-by-step plan for Claude Code, Cursor or any AI coder. |
 | **Learn** | For code: where to start reading, the core files, import loops, big files, and a quiz built from the scan. |
-| **Blast radius** | Pick any box and see everything reachable from it by following the arrows. Useful for asking "if an AI tool were plugged in here, what could it touch?" |
+| **Reachable from here** | Pick any box and see everything reachable from it by following the arrows on the map. Useful for asking "if an AI tool were plugged in here, what could it touch?" Only mapped arrows count. |
 
 ## Quick start
 
@@ -45,7 +45,7 @@ Complexity runs from 0 to 100 and uses the same formula for Today and Planned, s
 | Depth | 20 | Most steps from the top box (full marks at 6) |
 | Copies | 15 | Dashed arrows touching a data store, meaning the same data kept in two places (full marks at 3) |
 
-Under 35 is Light, under 65 is Medium, and 65 and up is Heavy.
+Under 35 is Light, under 65 is Medium, and 65 and up is Heavy. The score measures structure, not code quality. A high score is a reason to look, not a verdict.
 
 ## What the report checks
 
@@ -79,7 +79,7 @@ Each real site exposed a rule that was too eager. Those rules were fixed before 
 
 | File | What it does |
 |---|---|
-| `index.html` | The app: map editor, player, report, brief, quiz and blast radius |
+| `index.html` | The app: map editor, player, report, brief, quiz and reachable-from-here view |
 | `report.js` | The scoring and finding rules, readable on their own |
 | `scanner/morph-scan.js` | Reads a code folder into a map |
 | `scanner/morph-web.js` | Reads a public website into a map |
