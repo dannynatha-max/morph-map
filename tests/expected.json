@@ -1,0 +1,43 @@
+{
+  "broken-import.json": {
+    "score": 11,
+    "level": "Light",
+    "findings": [
+      "amber | Coverage | 1 local import could not be followed",
+      "info | Where to start | Start reading at src/main.js",
+      "green | Tangles | No import loops"
+    ]
+  },
+  "express-then-vs-now.json": {
+    "score": 45,
+    "level": "Medium",
+    "findings": [
+      "amber | Big files | lib/response.js has 779 lines",
+      "amber | Big files | lib/application.js has 533 lines",
+      "amber | Big files | lib/request.js has 402 lines",
+      "info | Where to start | Start reading at index.js",
+      "info | Where to start | lib/utils.js is used by 3 files",
+      "info | Where to start | lib/router/index.js is used by 2 files",
+      "info | Where to start | lib/middleware/query.js is used by 2 files",
+      "info | Tangles | 1 file connects to nothing",
+      "info | Outside packages | 19 outside packages",
+      "green | Tangles | No import loops"
+    ]
+  },
+  "harbour-and-pine-audit.json": {
+    "score": 54,
+    "level": "Medium",
+    "findings": [
+      "red | Structure | Checkout cannot be reached by a link",
+      "red | Security | HSTS lasts only 30 minutes",
+      "red | Security | Session cookie readable by scripts",
+      "amber | Structure | Same 27-link menu on every page",
+      "amber | Structure | 10 look-alike pages could be 3",
+      "amber | Structure | 1 page is more than 3 clicks deep",
+      "amber | Structure | 2 broken links",
+      "amber | Speed and privacy | 5 outside services load on the site",
+      "amber | Security | Content Security Policy does not limit scripts",
+      "info | Security | No Referrer-Policy"
+    ]
+  }
+}

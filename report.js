@@ -26,7 +26,7 @@
       parts: { size: Math.round(size), tangle: Math.round(tangle), chain: Math.round(chain), copies: Math.round(copy) } };
   }
 
-  /* ---------- AI blast radius: everything reachable by following arrows from one box ---------- */
+  /* ---------- Reachable from here: everything reachable by following arrows from one box ---------- */
   function blast(m, start) {
     const out = {}; ((m && m.edges) || []).forEach(e => (out[e.from] = out[e.from] || []).push(e.to));
     const seen = new Set([start]), q = [start], hops = { [start]: 0 };
@@ -151,6 +151,10 @@
     const files = s.files || [], F = [], by = {}; files.forEach(f => by[f.f] = f);
     const usedBy = {}; files.forEach(f => f.imp.forEach(t => (usedBy[t] = usedBy[t] || []).push(f.f)));
     const lines = files.reduce((a, f) => a + f.lines, 0), pk = {}; files.forEach(f => f.ext.forEach(e => pk[e] = (pk[e] || 0) + 1));
+    const unres = s.unresolvedCount || 0;
+    if (unres) { const ex = (s.unresolved || []).slice(0, 3).map(u => u.from + ' imports ' + u.spec).join('; ');
+      F.push({ sev: 'amber', area: 'Coverage', title: unres + ' local ' + (unres === 1 ? 'import' : 'imports') + ' could not be followed', detail: 'The file it points to was not in the scan, so it is missing from the map and from the arrows. For example: ' + ex + '. The map may be incomplete here.', fix: 'Check the path, or scan the folder that holds it.' }); }
+    else if (s.analysed) F.push({ sev: 'green', area: 'Coverage', title: 'Every local import was followed', detail: s.analysed + ' files were scanned and every import between them resolved.' });
     const entries = files.filter(f => f.entry), roots = files.filter(f => !usedBy[f.f] && f.imp.length).sort((a, b) => b.imp.length - a.imp.length);
     const start = (entries[0] || roots[0]); if (start) F.push({ sev: 'info', area: 'Where to start', title: 'Start reading at ' + start.f, detail: 'It is where the program begins and it pulls in ' + start.imp.length + ' other files. Follow its imports from here.', file: start.f });
     const core = Object.entries(usedBy).filter(([, v]) => v.length >= 2).sort((a, b) => b[1].length - a[1].length).slice(0, 3);
