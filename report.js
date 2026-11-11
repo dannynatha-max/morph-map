@@ -146,6 +146,102 @@
       findings: F.sort((a, b) => SEC[b.sev] - SEC[a.sev]) };
   }
 
+  /* ---------- import loops: groups of files that depend on each other in a circle (Tarjan) ---------- */
+  function loops(files) {
+    const by = {}; files.forEach(f => by[f.f] = f);
+    let idx = 0; const st = [], on = {}, ix = {}, low = {}, cyc = [];
+    const sc = v => { ix[v] = low[v] = idx++; st.push(v); on[v] = 1; (by[v] ? by[v].imp : []).forEach(w => { if (!by[w]) return; if (ix[w] == null) { sc(w); low[v] = Math.min(low[v], low[w]); } else if (on[w]) low[v] = Math.min(low[v], ix[w]); });
+      if (low[v] === ix[v]) { const c = []; let w; do { w = st.pop(); on[w] = 0; c.push(w); } while (w !== v); if (c.length > 1) cyc.push(c); } };
+    files.forEach(f => { if (ix[f.f] == null) sc(f.f); });
+    return cyc;
+  }
+
+  /* ---------- change alarm: what one change did to a project, in plain words ----------
+     a = the scan you approved, b = the scan now. mapA and mapB are their maps.
+     plan (optional) = {today, planned}: the plan you drew, to check the change against.
+     Every rule is a plain comparison of the two scans. Nothing is guessed.
+     Verdict: any red line = alarm ("Stop and check"), else any amber = check ("Worth a look"), else pass ("Looks safe"). */
+  const DATA = /(^|\/)(models?|db|database|schema|stores?|migrations?|supabase|prisma|repositor(y|ies)|entities|dao|state|data(Provider)?)(\/|$|\.)/i;
+  function changes(a, b, mapA, mapB, plan) {
+    const fa = (a && a.files) || [], fb = (b && b.files) || [], A = {}, B = {}; fa.forEach(f => A[f.f] = f); fb.forEach(f => B[f.f] = f);
+    const some = (arr, n) => arr.slice(0, n || 4).join(', ') + (arr.length > (n || 4) ? ' and ' + (arr.length - (n || 4)) + ' more' : '');
+    const usedBy = fs => { const u = {}; fs.forEach(f => f.imp.forEach(t => u[t] = (u[t] || 0) + 1)); return u; };
+    const uA = usedBy(fa), uB = usedBy(fb), L = [], add = (sev, title, detail, fix) => L.push({ sev, title, detail: detail || '', fix: fix || '' });
+    const added = fb.filter(f => !A[f.f]).map(f => f.f), removed = fa.filter(f => !B[f.f]).map(f => f.f);
+    const sA = mapMetrics(mapA), sB = mapMetrics(mapB), d = sB.score - sA.score;
+    // 1. complexity, same formula as the report
+    if (d >= 10) add('red', 'Complexity jumped from ' + sA.score + ' to ' + sB.score, 'A rise of 10 points or more in one change usually means the app got more tangled, not just bigger.', 'Ask the AI why it needed the extra parts, and whether a simpler way exists.');
+    else if (d >= 4) add('amber', 'Complexity rose from ' + sA.score + ' to ' + sB.score, 'A small rise is normal for a new feature. Keep an eye on it.');
+    else if (d <= -4) add('green', 'Complexity fell from ' + sA.score + ' to ' + sB.score, 'The app got simpler.');
+    // 2. import loops
+    const key = c => c.slice().sort().join('|'), lA = new Set(loops(fa).map(key)), lB = loops(fb), newLoops = lB.filter(c => !lA.has(key(c)));
+    newLoops.slice(0, 2).forEach(c => add('red', c.length + ' files now depend on each other in a loop', some(c) + '. Loops make every later change riskier, for you and for the AI.', 'Ask the AI to move the shared part into its own file.'));
+    const goneLoops = lA.size - (lB.length - newLoops.length); if (goneLoops > 0) add('green', pl(goneLoops, 'import loop was', 'import loops were') + ' untangled');
+    // 3. outside packages
+    const pk = fs => { const s = new Set(); fs.forEach(f => f.ext.forEach(e => s.add(e))); return s; }, pA = pk(fa), pB = pk(fb);
+    const pNew = [...pB].filter(x => !pA.has(x)), pGone = [...pA].filter(x => !pB.has(x));
+    if (pNew.length) add('amber', pl(pNew.length, 'new outside package', 'new outside packages') + ': ' + some(pNew), 'Each one is code you did not write and now depend on.', 'Check the AI really needed ' + (pNew.length === 1 ? 'it' : 'them') + '.');
+    if (pGone.length) add('info', pl(pGone.length, 'outside package', 'outside packages') + ' no longer used: ' + some(pGone));
+    // 4. new places that store data
+    const dNew = added.filter(f => DATA.test(f));
+    if (dNew.length) add('amber', pl(dNew.length, 'new data file', 'new data files') + ': ' + some(dNew), 'New places to keep data are where copies creep in.', 'Check it does not keep a second copy of something you already store.');
+    // 5. new starting points
+    const eNew = added.filter(f => B[f].entry);
+    if (eNew.length) add('amber', pl(eNew.length, 'new starting point', 'new starting points') + ': ' + some(eNew), 'The program can now begin from another file.');
+    // 6. a core file removed, or changed a lot
+    removed.filter(f => (uA[f] || 0) >= 3).slice(0, 2).forEach(f => add('amber', 'A core file was removed: ' + f, uA[f] + ' files used it before this change.', 'Check everything that relied on it still works.'));
+    fb.filter(f => A[f.f] && (uB[f.f] || 0) >= 3 && Math.abs(f.lines - A[f.f].lines) >= Math.max(40, A[f.f].lines * 0.3)).slice(0, 3)
+      .forEach(f => add('amber', 'Core file ' + f.f + ' changed a lot', A[f.f].lines + ' lines before, ' + f.lines + ' now. ' + uB[f.f] + ' files depend on it.', 'Test the parts that use it.'));
+    // 7. files that grew past 400 lines
+    fb.filter(f => A[f.f] && f.lines > 400 && A[f.f].lines <= 400).slice(0, 3).forEach(f => add('amber', f.f + ' grew past 400 lines', A[f.f].lines + ' lines before, ' + f.lines + ' now. Big files do many jobs and are harder to change safely.', 'Ask the AI to split it by job.'));
+    // 8. leftovers: new files that nothing uses
+    const lonely = (fs, u) => fs.filter(f => !f.entry && !u[f.f] && !f.imp.length).map(f => f.f), loA = new Set(lonely(fa, uA)), loNew = lonely(fb, uB).filter(f => !loA.has(f));
+    if (loNew.length) add('amber', pl(loNew.length, 'new file connects', 'new files connect') + ' to nothing', some(loNew) + '. Often a leftover the AI never wired in, or an old version it forgot to delete.', 'Ask the AI whether ' + (loNew.length === 1 ? 'it is' : 'they are') + ' used. Delete if not.');
+    // 9. size of the change
+    if (added.length > Math.max(5, fa.length * 0.25)) add('amber', 'Large change: ' + added.length + ' files added in one go', 'Big changes are hard to check. Smaller steps are safer.');
+    else if (added.length) add('info', pl(added.length, 'file', 'files') + ' added: ' + some(added));
+    if (removed.length) add('info', pl(removed.length, 'file', 'files') + ' removed: ' + some(removed));
+    // 10. rewiring between files that were already there
+    const ek = fs => { const s = new Set(); fs.forEach(f => f.imp.forEach(t => s.add(f.f + '>' + t))); return s; }, eA = ek(fa), eB = ek(fb);
+    const both = k => { const [x, y] = k.split('>'); return A[x] && A[y] && B[x] && B[y]; };
+    const wNew = [...eB].filter(k => !eA.has(k) && both(k)).length, wGone = [...eA].filter(k => !eB.has(k) && both(k)).length;
+    if (wNew || wGone) add('info', 'Existing files were rewired', pl(wNew, 'new connection', 'new connections') + ' and ' + pl(wGone, 'removed connection', 'removed connections') + ' between files that were already there.');
+    // 11. the plan you drew, if there is one
+    if (plan && plan.today && plan.planned) {
+      const tn = plan.today.nodes || [], pn = plan.planned.nodes || [], nowIds = new Set(((mapB && mapB.nodes) || []).map(n => n.id)), nowLabels = new Set(((mapB && mapB.nodes) || []).map(n => (n.label || '').toLowerCase()));
+      const pIds = new Set(pn.map(n => n.id)), tIds = new Set(tn.map(n => n.id));
+      const toGo = tn.filter(n => !pIds.has(n.id)), toAdd = pn.filter(n => !tIds.has(n.id));
+      if (toGo.length || toAdd.length) {
+        const still = toGo.filter(n => nowIds.has(n.id)), missing = toAdd.filter(n => !nowIds.has(n.id) && !nowLabels.has((n.label || '').toLowerCase()));
+        const done = toGo.length - still.length + toAdd.length - missing.length, all = toGo.length + toAdd.length;
+        add(done === all ? 'green' : 'amber', 'Your plan: ' + done + ' of ' + all + ' planned changes are in the code',
+          (still.length ? 'Still there: ' + some(still.map(n => n.label || n.id)) + '. ' : '') + (missing.length ? 'Not added yet: ' + some(missing.map(n => n.label || n.id)) + '. ' : '') + 'Your plan aimed for complexity ' + mapMetrics(plan.planned).score + '. The code is now at ' + sB.score + '.');
+      }
+    }
+    const same = !added.length && !removed.length && !wNew && !wGone && !pNew.length && !pGone.length && fb.every(f => A[f.f] && A[f.f].lines === f.lines);
+    if (same) add('green', 'Nothing changed', 'The code matches your approved map exactly.');
+    else if (!L.some(l => l.sev === 'red' || l.sev === 'amber')) add('green', 'No warning signs', 'The structure changed, but none of the alarm rules fired.');
+    L.sort((x, y) => SEC[y.sev] - SEC[x.sev]);
+    const worst = Math.max(0, ...L.map(l => SEC[l.sev])), verdict = worst >= 3 ? 'alarm' : worst >= 2 ? 'check' : 'pass';
+    const lines = fs => fs.reduce((n, f) => n + f.lines, 0), dl = lines(fb) - lines(fa);
+    const bits = []; if (added.length) bits.push('added ' + pl(added.length, 'file', 'files')); if (removed.length) bits.push('removed ' + pl(removed.length, 'file', 'files')); if (pNew.length) bits.push('brought in ' + pl(pNew.length, 'outside package', 'outside packages'));
+    const summary = same ? 'Nothing changed since you approved the map.' : 'This change ' + (bits.length ? bits.join(bits.length > 2 ? ', ' : ' and ') : 'edited existing files only') + '. ' + (dl ? Math.abs(dl) + ' lines ' + (dl > 0 ? 'more' : 'fewer') + ' overall. ' : '') + 'Complexity ' + (d ? 'went from ' + sA.score + ' to ' + sB.score : 'stayed at ' + sB.score) + '.';
+    return { verdict, title: verdict === 'alarm' ? 'Stop and check' : verdict === 'check' ? 'Worth a look' : 'Looks safe', summary, lines: L,
+      stats: { added: added.length, removed: removed.length, lines: dl, before: sA.score, after: sB.score } };
+  }
+
+  /* ---------- a message to paste to the AI coder about the change it just made ---------- */
+  function changeMessage(c, name) {
+    const ask = c.lines.filter(l => l.sev === 'red' || (l.sev === 'amber' && l.fix)), T = [];
+    T.push('I checked your last change to ' + (name || 'my project') + ' with Morph Map, which compares the code before and after.');
+    T.push(''); T.push(c.summary); T.push('');
+    if (!ask.length) { T.push('Nothing worrying came up. In two or three plain sentences, tell me what you changed and why.'); return T.join('\n'); }
+    T.push('Before I accept it, please go through these one by one. For each, explain in plain words why it was needed, or fix it:'); T.push('');
+    ask.forEach((l, i) => T.push((i + 1) + '. ' + l.title + '. ' + l.detail + (l.fix ? ' ' + l.fix : '')));
+    T.push(''); T.push('Do not add anything new while fixing these. When done, list exactly which files you changed.');
+    return T.join('\n');
+  }
+
   /* ---------- code (for learners) ---------- */
   function codeReport(s) {
     const files = s.files || [], F = [], by = {}; files.forEach(f => by[f.f] = f);
@@ -155,11 +251,7 @@
     const start = (entries[0] || roots[0]); if (start) F.push({ sev: 'info', area: 'Where to start', title: 'Start reading at ' + start.f, detail: 'It is where the program begins and it pulls in ' + start.imp.length + ' other files. Follow its imports from here.', file: start.f });
     const core = Object.entries(usedBy).filter(([, v]) => v.length >= 2).sort((a, b) => b[1].length - a[1].length).slice(0, 3);
     core.forEach(([f, v]) => F.push({ sev: 'info', area: 'Where to start', title: f + ' is used by ' + v.length + ' files', detail: 'A core building block. Understand it early and the rest gets easier.', file: f }));
-    // circular imports (Tarjan)
-    let idx = 0; const st = [], on = {}, ix = {}, low = {}, cyc = [];
-    const sc = v => { ix[v] = low[v] = idx++; st.push(v); on[v] = 1; (by[v] ? by[v].imp : []).forEach(w => { if (!by[w]) return; if (ix[w] == null) { sc(w); low[v] = Math.min(low[v], low[w]); } else if (on[w]) low[v] = Math.min(low[v], ix[w]); });
-      if (low[v] === ix[v]) { const c = []; let w; do { w = st.pop(); on[w] = 0; c.push(w); } while (w !== v); if (c.length > 1) cyc.push(c); } };
-    files.forEach(f => { if (ix[f.f] == null) sc(f.f); });
+    const cyc = loops(files);
     cyc.slice(0, 2).forEach(c => F.push({ sev: 'amber', area: 'Tangles', title: c.length + ' files depend on each other in a loop', detail: c.slice(0, 4).join(', ') + '. Loops make code harder to follow and change.', fix: 'Move the shared part into its own file.' }));
     files.filter(f => f.lines > 400).sort((a, b) => b.lines - a.lines).slice(0, 3).forEach(f => F.push({ sev: 'amber', area: 'Big files', title: f.f + ' has ' + f.lines + ' lines', detail: 'Big files do many jobs. Read it in sections.', fix: 'Read it one section at a time; bigger projects often split files like this by job.', file: f.f }));
     const lonely = files.filter(f => !f.entry && !usedBy[f.f] && !f.imp.length);
@@ -171,6 +263,6 @@
   }
 
   function report(scan) { return !scan ? null : scan.kind === 'web' ? webReport(scan) : codeReport(scan); }
-  const api = { mapMetrics, report, blast, brief, quiz };
+  const api = { mapMetrics, report, blast, brief, quiz, loops, changes, changeMessage };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.MorphReport = api;
 })(this);

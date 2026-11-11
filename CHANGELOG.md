@@ -1,5 +1,20 @@
 # Changelog
 
+## 4.0.0
+
+**New**
+- Change alarm: scan a project, approve the map, then scan again after an AI change. Morph Map plays Approved into Now, explains the change in plain words and gives a verdict: Looks safe, Worth a look, or Stop and check.
+- "Copy a message for the AI": a ready-made note asking the AI coder to explain or fix each warning.
+- Scan a folder in the browser. Press Scan a folder or drag the folder onto the map. Nothing is uploaded and no terminal is needed.
+- Boxes keep their place between scans, so only real changes move.
+- Command line: `--since <commit>` and `--check <approved.json>` print the verdict and exit with code 1 on Stop and check.
+- If you drew a plan, the change check reports how much of it is now in the code.
+- New made-up example: an AI change to Pawsome Bookings that needs checking. The app opens on it.
+
+**Changed**
+- The scanning rules moved to `scanner/scan-core.js`, shared by the app and the command line. Scan results are unchanged.
+- `tools/inline.js` copies the shared files into `index.html`. `test/run.js` checks the scanner and the change rules.
+
 ## 3.0.0
 
 **New**
