@@ -1,38 +1,54 @@
 # Morph Map
 
-**See how a codebase or website really works, sketch how it should work, and press play to watch it change.**
+**See what your AI coder just did to your app. Approve it or send it back, without reading code.**
 
-Morph Map scans a real project and draws it as an editable map. You draw the plan next to it, check the plan is actually simpler, then hand the change to your AI coder as a ready-made brief. One HTML file, no install, no account, and nothing leaves your browser.
+Morph Map scans your project and draws it as a map. You approve the map. After every change your AI coder makes, scan again: Morph Map plays the difference, says what changed in plain words, and gives a verdict. One HTML file, no install, no account, and nothing leaves your browser.
 
 ![Morph Map demo](demo.gif)
 
-**[Open Morph Map](https://dannynatha-max.github.io/morph-map/)** and pick an example from the Examples menu, or **[browse 7 scanned projects](https://dannynatha-max.github.io/morph-map/demo-scans.html)**.
+**[Open Morph Map](https://dannynatha-max.github.io/morph-map/)**. It opens on a made-up example of an AI change that needs checking.
 
-## What you can do
+## The change alarm
+
+1. **Scan.** Press **Scan a folder** and pick your project folder (or drag it onto the map). This first scan becomes your approved map.
+2. **Let the AI work.** Ask Claude Code, Cursor, Lovable or any AI coder for a change.
+3. **Scan again.** Pick the same folder. Morph Map morphs Approved into Now and shows a verdict:
+
+| Verdict | Means | Triggered by |
+|---|---|---|
+| **Looks safe** | No warning signs | Nothing below fired |
+| **Worth a look** | Check before you accept | A new outside package, a new data file, a new starting point, a core file removed or changed by 30% or more, a file growing past 400 lines, a new file that connects to nothing, complexity up 4 to 9 points, or a very large change |
+| **Stop and check** | Likely made the app harder to change | Complexity up 10 points or more, or files that now depend on each other in a loop |
+
+4. **Approve or send it back.** Approve makes Now your new approved map. Or press **Copy a message for the AI** to get a ready-made note asking the AI to explain or fix each warning.
+
+Every rule is a plain comparison of the two scans and is listed in the app under "How this is scored". If you drew a plan first, the check also reports how much of the plan is now in the code.
+
+**From the command line** (for a git hook or a build step):
+```
+node scanner/morph-scan.js . --since HEAD~1 --out change.json
+```
+This compares your project with the previous commit, prints the verdict, and exits with code 1 on "Stop and check". Use `--check approved.json` to compare with a map you exported earlier. Import `change.json` to watch the change play.
+
+## What else you can do
 
 | | |
 |---|---|
-| **Scan** | Turn a code folder or a public website into a map. Files or pages become boxes, imports or links become arrows. |
 | **Plan** | Edit a second map called Planned. Add, delete, rename and connect boxes, and leave notes for the build. |
 | **Play** | Animate Today into Planned. The complexity score counts down as the map changes. |
 | **Report** | Scores and findings worked out from the scan, each one a plain rule you can check. |
 | **Brief** | Turn the difference between the two maps into a step-by-step plan for Claude Code, Cursor or any AI coder. |
 | **Learn** | For code: where to start reading, the core files, import loops, big files, and a quiz built from the scan. |
-| **Blast radius** | Pick any box and see everything reachable from it by following the arrows. Useful for asking "if an AI tool were plugged in here, what could it touch?" |
+| **Blast radius** | Pick any box and see everything reachable from it by following the arrows. |
+| **Audit a website** | Map a public site and get structure findings and a passive security grade. |
 
 ## Quick start
 
-**1. Map a code project** (Node 18 or newer, nothing to install)
-```
-node scanner/morph-scan.js ./your-project --out my-map.json
-```
-Open `index.html`, press **Import** and pick `my-map.json`. Reads JavaScript, TypeScript, Python, Vue, Svelte and HTML.
+**1. Map a code project.** Open Morph Map, press **Scan a folder** and pick the project. Reads JavaScript, TypeScript, Python, Vue, Svelte and HTML. Big projects are grouped by folder so the map stays readable. Folder picking needs a desktop browser. The command line does the same job: `node scanner/morph-scan.js ./your-project --out my-map.json`, then **Import**.
 
-**2. Map a website**
-Open the site in your browser, open the console, paste `scanner/morph-web.js` and press Enter. It reads up to 40 public pages and copies a map you can Import.
+**2. Map a website.** Open the site in your browser, open the console, paste `scanner/morph-web.js` and press Enter. It reads up to 40 public pages and copies a map you can Import.
 
-**3. Plan and play**
-Switch to **Planned**, change the map, then press **Play the change**. Open the **Report** tab and press **Write the AI coder brief** when you are happy.
+**3. Plan and play.** Switch to **Planned**, change the map, then press **Play the change**. Open the **Report** tab and press **Write the AI coder brief** when you are happy.
 
 ## How the score works
 
@@ -79,17 +95,21 @@ Each real site exposed a rule that was too eager. Those rules were fixed before 
 
 | File | What it does |
 |---|---|
-| `index.html` | The app: map editor, player, report, brief, quiz and blast radius |
-| `report.js` | The scoring and finding rules, readable on their own |
-| `scanner/morph-scan.js` | Reads a code folder into a map |
+| `index.html` | The app: scan, change alarm, map editor, player, report, brief, quiz and blast radius |
+| `report.js` | The scoring, finding and change-alarm rules, readable on their own |
+| `scanner/scan-core.js` | Turns a list of code files into a map. Shared by the app and the command line |
+| `scanner/morph-scan.js` | Command line: map a folder, or check a change with `--since` or `--check` |
 | `scanner/morph-web.js` | Reads a public website into a map |
-| `examples/` | Ready-made maps: a fictional shop audit, Express 2014 vs today |
+| `examples/` | Ready-made maps: a change alarm, a fictional shop audit, Express 2014 vs today |
 | `demo-scans.html` | Seven scanned projects to explore |
+| `tools/inline.js` | Copies `report.js` and `scan-core.js` into `index.html` after you edit them |
+| `test/run.js` | Checks for the scanner and the change rules: `node test/run.js` |
 
 ## Coming next
 
-- `npx morph-map ./your-project` to scan and open in one step
-- A GitHub Action that posts the complexity change on every pull request
+- A ready-made hook so the check runs by itself after every AI change
+- A GitHub Action that posts the verdict on every pull request
+- More languages in the scanner
 - Clearer maps for sites with very large menus
 
 ## Licence and credit
